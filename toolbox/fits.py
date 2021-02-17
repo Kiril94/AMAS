@@ -154,33 +154,15 @@ def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
     return minuit_obj, x, y, sy
     
 
-def chi2_fit_func(x,y,sy,func, p0, Range = None, absolute_sigma = True,show_plot = True, 
-                  plot_res = False, save_plot=False, figname = None, 
-                  xlabel = 'x',ylabel='', data_label='Data, with Poisson errors', fit_label = '', 
-                  Text_pos = (0.01,.99), figsize = (10,5), y_range= None, legend_loc = 2, legend_fs =18,
-                  label_fs = 25, ticksize = 20, res_legend_fs =18, res_label = 'res. with error',
-                  res_legend_off= False, res_legend_loc = 0, plot_res_distr = False,res_bins = 30, 
-                  inset_bbox = (2,3), range_res_distr = (-.5,.5), axis = None, figure = None, 
-                  legend_off = False, x_show_range = None, text_fs = 14, dpi = 80, 
-                  ylogscale = False, xlogscale = False, show_CI = False, color_scheme = 0, 
-                  style = 'ggplot', ecolor = 'b',capsize = 3, capthick = 0.3, markersize = 3, elinewidth = .9):
-    
+def chi2_fit_func(
+    x,y,sy,func, p0, Range = None, fit_label = '', Text_pos = (0.01,.99), kwargs = {}):
+        
     """Fit a single function to data, calls chi2_fit_mult_func"""
     if Range==None:
         Range = [(x.min(), x.max())]
-    ax, fig, Popt, Pcov = chi2_fit_mult_func(x, y, sy, [func], [p0], Ranges = Range, absolute_sigma = absolute_sigma,
-                                             show_plot = show_plot, save_plot=save_plot, 
-                                             figname = figname, xlabel = xlabel,ylabel=ylabel, 
-                                             data_label=data_label, Fit_label = [fit_label],
-                                             Text_pos = [Text_pos], figsize = figsize, y_range= y_range, 
-                                             legend_loc = legend_loc, legend_fs =legend_fs,
-                                             label_fs = label_fs, ticksize = ticksize, res_legend_fs =res_legend_fs,
-                  res_label = res_label, res_legend_loc = res_legend_loc, plot_res_distr = plot_res_distr,res_bins = res_bins, inset_bbox = inset_bbox,
-                  range_res_distr = range_res_distr, plot_res = plot_res, res_legend_off=res_legend_off, 
-                  axis = axis, figure = figure, legend_off=legend_off, x_show_range = x_show_range, text_fs = text_fs,
-                  dpi = dpi, ylogscale = ylogscale, xlogscale = xlogscale, show_CI = show_CI, color_scheme = color_scheme,
-                  style = style,  ecolor = ecolor, capsize = capsize, capthick = capthick, markersize = markersize,
-                  elinewidth = elinewidth)
+    ax, fig, Popt, Pcov = chi2_fit_mult_func(
+        x, y, sy, [func], [p0], Ranges = Range, 
+        Fit_label = [fit_label], Text_pos = [Text_pos], **kwargs)
     return ax, fig, Popt[0], Pcov[0]
 
 
@@ -240,6 +222,9 @@ def chi2_fit_mult_func(X,Y,SY,functions, P0, Ranges,absolute_sigma = True, plot_
     const_err = (type(SY)==float)
     if const_err:
         SY = np.ones(len(X))*SY
+    
+    if not(np.count_nonzero(SY == 0)==0):
+        raise Exception('One of the entries of sy is 0')
     
     ax.errorbar(X, Y, yerr=SY, marker = '.', mec=ecolor, color = ecolor, elinewidth=elinewidth, 
              capsize = capsize, capthick=capthick, linestyle = 'none',markersize = markersize,

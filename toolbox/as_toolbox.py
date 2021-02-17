@@ -26,19 +26,26 @@ def load_url_data(url):
     """Load text data under url into numpy array. 
     Lines of text separate different data sets."""
     f = urllib.request.urlopen(url)
-    Lines = []
-    i = 0
-    for line in f:
-        decoded_line = line.decode("utf-8")
-        i += 1
-        if decoded_line.startswith('Data set'):
-            Lines.append(i+1)
+    Text_encoded = f.readlines()
+    Text = [Text_encoded[i].decode("utf-8") for i in range(len(Text_encoded))]
+    i =0
+    Start_Lines = []
+    Stop_Lines = []
+
+    for i in range(len(Text)-1):
+        if not(Text[i][0].isdigit()) and (Text[i+1][0].isdigit()):
+            Start_Lines.append(i+1)
+        elif not(Text[i+1][0].isdigit()) and (Text[i][0].isdigit()):
+            Stop_Lines.append(i+1)
         else:
             pass
-    Lines.append(i)
+
+    if len(Stop_Lines)<len(Start_Lines):
+        Stop_Lines.append(len(Text))
+    
     Data = []
-    for i in range(len(Lines)-1):
-        kwargs = {'skiprows':Lines[i], 'max_rows':(Lines[i+1]-Lines[i]-2)}
+    for i in range(len(Start_Lines)):
+        kwargs = {'skiprows':Start_Lines[i], 'max_rows':(Stop_Lines[i]-Start_Lines[i])}
         f = urllib.request.urlopen(url)
         data = np.loadtxt(f, **kwargs)
         Data.append(data)
@@ -362,3 +369,4 @@ def seq_freq_test(integers, seq_l = 3, N_bins = 21, show_plot = True, figsize = 
     else:
         plt.close(fig)
     return chi2_prob, fig,ax
+
