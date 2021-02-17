@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 """
 Created on Sat Jan 16 15:18:15 2021
 
@@ -13,15 +13,16 @@ from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 # In[General plots]
-def nice_plot(X,Y, SY = 0, errorbar = False,scatter = False, absolute_sigma = True, 
-                       show_plot = True, save_plot=False, figname = None, xlabel = 'x',ylabel='', 
-                       data_label=' ', figsize = (10,5), y_range= None, 
-                       legend_loc = 0, legend_fs =20, label_fs = 25, ticksize = 20,
-                       axis= None, figure = None, legend_off = False, x_show_range = None, text_fs = 14, 
-                       dpi = 80, xlogscale = False, ylogscale = False, color = 'blue', style = 'ggplot',
-                       linestyle = 'solid', 
-                       ecolor = 'deepskyblue', capsize = 3, capthick = 0.3, err_markersize = 6, 
-                       elinewidth = .9, alpha = 1, scr_markersize = 3, scr_markerstyle = 'o'):
+def nice_plot(
+    X,Y, SY = 0, errorbar = False,scatter = False, absolute_sigma = True, 
+    show_plot = True, save_plot=False, figname = None, xlabel = 'x',ylabel='', 
+    data_label=' ', figsize = (10,5), y_range= None, legend_loc = 0, 
+    legend_fs =20, label_fs = 25, ticksize = 20, axis= None, 
+    figure = None, legend_off = False, x_show_range = None, text_fs = 14, 
+    dpi = 80, xlogscale = False, ylogscale = False, color = 'blue', 
+    style = 'ggplot', linestyle = 'solid', ecolor = 'deepskyblue', 
+    capsize = 3, capthick = 0.3, err_markersize = 6,  elinewidth = .9, 
+    alpha = 1, scr_markersize = 3, scr_markerstyle = 'o'):
     r"""
     Simple x-y plot. 
     
@@ -47,20 +48,24 @@ def nice_plot(X,Y, SY = 0, errorbar = False,scatter = False, absolute_sigma = Tr
     if const_err:
         SY = np.ones(len(X))*SY
     if errorbar:
-        ax.errorbar(X, Y, yerr=SY, marker = '.', mec=ecolor, color = ecolor, elinewidth=elinewidth, 
-                 capsize = capsize, capthick=capthick, linestyle = 'none',markersize = err_markersize,
-                 label =data_label, alpha = alpha)#plot data
+        ax.errorbar(X, Y, yerr=SY, marker = '.', mec=ecolor, color = ecolor, 
+                    elinewidth=elinewidth, capsize = capsize, capthick=capthick, 
+                    linestyle = 'none',markersize = err_markersize,
+                    label =data_label, alpha = alpha)#plot data
     elif scatter:
-        ax.scatter(X,Y, color = color,  label =data_label, linestyle = linestyle, s = scr_markersize,
+        ax.scatter(X,Y, color = color,  label =data_label, 
+                   linestyle = linestyle, s = scr_markersize,
         alpha = alpha, marker = scr_markerstyle)
     else:
-        ax.plot(X,Y, color = color,  label =data_label, linestyle = linestyle, alpha = alpha)
+        ax.plot(X,Y, color = color,  label =data_label, 
+                linestyle = linestyle, alpha = alpha)
     plt.style.use(style)
     
     ax.set_ylabel(ylabel, fontsize = label_fs)
     ax.tick_params(axis = 'both',labelsize  = ticksize)
     if not(legend_off):
-        legend = ax.legend(loc = legend_loc, fontsize = legend_fs, shadow = True)
+        legend = ax.legend(loc = legend_loc, 
+                           fontsize = legend_fs, shadow = True)
         legend.get_frame().set_facecolor('white')
     
     ax.set_xlabel(xlabel, fontsize =label_fs)
@@ -89,21 +94,24 @@ def nice_plot(X,Y, SY = 0, errorbar = False,scatter = False, absolute_sigma = Tr
     return ax, fig
 
 
-def nice_histogram(x_all, N_bins, show_plot = False, plot_hist = False, plot_errors = True, 
-                   plot_legend = True, save = False, figname = '', x_range = None, 
-                   data_label = 'Data, histogram', data_label_hist = '',figsize = (12,6), 
-                   histtype = 'step', color_hist = 'orange', 
-                   xlabel = 'x', ylabel = 'Frequency', label_fs = 20, 
-                   legend_fs = 18, legend_loc = 0, ticks_lsize = 20, xlog_scale = False,
-                   ylog_scale = False, axis = None, figure = None, dpi = 80, ecolor = 'deepskyblue', 
-                   capsize = 3, capthick = 0.3, markersize = 6, elinewidth = .9, hist_alpha = .9,
-                   hist_linestyle = 'solid', hist_linewidth = 2, plot_style = 'ggplot'):
+def nice_histogram(
+    x_all, N_bins, show_plot = False, plot_hist = False, plot_errors = True, 
+    plot_legend = True, save = False, figname = '', x_range = None, 
+    data_label = 'Data, histogram', data_label_hist = '',figsize = (12,6), 
+    histtype = 'step', color_hist = 'orange', xlabel = 'x', 
+    ylabel = 'Frequency', label_fs = 20, legend_fs = 18, legend_loc = 0, 
+    ticks_lsize = 20, xlog_scale = False, ylog_scale = False, axis = None, 
+    figure = None, dpi = 80, ecolor = 'deepskyblue', capsize = 3, 
+    capthick = 0.3, markersize = 6, elinewidth = .9, hist_alpha = .9,
+    hist_linestyle = 'solid', hist_linewidth = 2, plot_style = 'ggplot'):
     """Produce a nice histogram.
     Returns: x, y, sy, binwidth, fig, ax."""
     if not(x_range==None):
         mask_x = (x_all>x_range[0]) & (x_all<x_range[1])
         x_all = x_all[mask_x]
-    x,y,sy, binwidth = fits.produce_hist_values(x_all,N_bins, x_range = x_range,log = xlog_scale)
+    x,y,sy, binwidth = fits.produce_hist_values(x_all,N_bins, 
+                                                x_range = x_range,
+                                                log = xlog_scale)
     if not(axis==None):
         ax = axis
         fig = figure
@@ -112,12 +120,16 @@ def nice_histogram(x_all, N_bins, show_plot = False, plot_hist = False, plot_err
     plt.style.use(plot_style)
 
     if plot_hist:
-        ax.hist(x_all, bins=N_bins, range=(x_all.min(), x_all.max()), histtype=histtype,
-                       linewidth=hist_linewidth, color=color_hist, label=data_label_hist, alpha = hist_alpha, 
-                       linestyle = hist_linestyle)
+        ax.hist(x_all, bins=N_bins, range=(x_all.min(), x_all.max()), 
+                histtype=histtype, linewidth=hist_linewidth, color=color_hist, 
+                label=data_label_hist, alpha = hist_alpha, 
+                linestyle = hist_linestyle)
     if plot_errors:
-        ax.errorbar(x, y, yerr=sy, xerr=0.0, label=data_label, marker = '.', mec=ecolor, color = ecolor, elinewidth=elinewidth, 
-             capsize = capsize, capthick=capthick, linestyle = 'none',markersize = markersize)
+        ax.errorbar(
+            x, y, yerr=sy, xerr=0.0, label=data_label, marker = '.', 
+            mec=ecolor, color = ecolor, elinewidth=elinewidth, 
+            capsize = capsize, capthick=capthick, linestyle = 'none',
+            markersize = markersize)
     ax.set_xlabel(xlabel, fontsize = label_fs)
     ax.set_ylabel(ylabel, fontsize = label_fs)
     ax.tick_params(axis ='both', labelsize = ticks_lsize)
@@ -126,7 +138,8 @@ def nice_histogram(x_all, N_bins, show_plot = False, plot_hist = False, plot_err
     if ylog_scale:
         ax.set_yscale('log')
     if plot_legend:
-        legend = ax.legend(loc=legend_loc, fontsize = legend_fs, shadow = True)
+        legend = ax.legend(loc=legend_loc, fontsize = legend_fs, 
+                           shadow = True)
         legend.get_frame().set_facecolor('white')
         
     if save:
@@ -294,7 +307,8 @@ def add_zoom_inset(ax, zoom,loc, x,y, xlim, ylim , sy = None,
     axins.set_xlabel(xlabel, fontsize = label_fs)
     axins.set_ylabel(ylabel, fontsize = label_fs)
     axins.set_xlim(xlim) # Limit the region for zoom
-    mark_inset(ax, axins, loc1=mark_inset_loc[0], loc2=mark_inset_loc[1], fc="none", ec="0.5")
+    mark_inset(ax, axins, loc1=mark_inset_loc[0], 
+               loc2=mark_inset_loc[1], fc="none", ec="0.5")
    
 
 # In[Random Numbers] 
@@ -315,7 +329,8 @@ def get_chi2_ndf( hist, const):
     ndof = data.size
     return chi2, ndof
 
-def show_int_distribution(integers, save_plot = True, figname = '', show_plot= False):
+def show_int_distribution(integers, save_plot = True, 
+                          figname = '', show_plot= False):
     """Show histogram of integers, to see if random.(Author: Troels Petersen)
     modified by: Kiril Klein
     Parameters: 
@@ -330,9 +345,12 @@ def show_int_distribution(integers, save_plot = True, figname = '', show_plot= F
     ax_number, ax_odd_even, ax_high_low = ax.flatten()
 
     # Fill 1d histograms and plot them:
-    hist_numbers  = create_1d_hist(ax_number,   integers,     10, (-0.5, 9.5), 'Numbers posted')                # Plot all digits
-    hist_odd_even = create_1d_hist(ax_odd_even, integers % 2,  2, (-0.5, 1.5), 'Even and odd numbers')          # Is number even or odd
-    hist_high_low = create_1d_hist(ax_high_low, integers // 5, 2, (-0.5, 1.5), 'Above and equal to or below 5') # Is number >= or < 5
+    hist_numbers  = create_1d_hist(ax_number, integers, 10, 
+                                  (-0.5, 9.5), 'Numbers posted') #Plot all digits
+    hist_odd_even = create_1d_hist(ax_odd_even, integers % 2,  2, 
+                                   (-0.5, 1.5), 'Even and odd numbers')#Is number even or odd
+    hist_high_low = create_1d_hist(ax_high_low, integers // 5, 2, 
+                                  (-0.5, 1.5), 'Above and equal to or below 5')#Is number >= or < 5
     fig.tight_layout()
     
     chi2_raw, ndf_raw  = get_chi2_ndf( hist_numbers,  1.0 / 10)
@@ -359,24 +377,30 @@ def show_int_distribution(integers, save_plot = True, figname = '', show_plot= F
 
 def Color_palette(k):
     """Takes integer, Returns color scheme."""
-    Color_schemes1 =  [[u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', 
-                       u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf'],
-                       ["#70d6ff","#ff70a6","#ff9770","#ffd670","#e9ff70"],
-                      ['#F61613', '#EECC86', '#34AE8E', '#636253', '#A26251'], 
-                      ["#8acdea","#746d75","#8c4843","#9e643c","#ede6f2"],
-                      ['#2CBDFE', '#47DBCD', '#9D2EC5',  '#F3A0F2', '#661D98', '#F5B14C'],
-                      ['#845EC2','#ffc75f','#f9f871','#ff5e78'],
-                      ['#fff3e6','#1a508b','#0d335d','#c1a1d3'],
-                      ["#f72585","#b5179e","#7209b7","#560bad","#480ca8","#3a0ca3","#3f37c9","#4361ee","#4895ef","#4cc9f0"],
-                      ["#22223b","#4a4e69","#9a8c98","#c9ada7","#f2e9e4"],
-                      ["#d8f3dc","#b7e4c7","#95d5b2","#74c69d","#52b788","#40916c","#2d6a4f","#1b4332","#081c15"],
-                      ["#ffbe0b","#fb5607","#ff006e","#8338ec","#3a86ff"],
-                      ["#7400b8","#6930c3","#5e60ce","#5390d9","#4ea8de","#48bfe3","#56cfe1","#64dfdf","#72efdd","#80ffdb"],
-                      ["#cc8b86","#f9eae1","#7d4f50","#d1be9c","#aa998f"],
-                      ["#ff595e","#ffca3a","#8ac926","#1982c4","#6a4c93"],
-                      ["#8c1c13","#bf4342","#e7d7c1","#a78a7f","#735751"],
-                      ["#f72585","#b5179e","#7209b7","#560bad","#480ca8","#3a0ca3","#3f37c9","#4361ee","#4895ef","#4cc9f0"],
-                      ["#006466","#065a60","#0b525b","#144552","#1b3a4b","#212f45","#272640","#312244","#3e1f47","#4d194d"]]
+    Color_schemes1 = [
+        [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', 
+        u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf'],
+        ["#70d6ff","#ff70a6","#ff9770","#ffd670","#e9ff70"],
+        ['#F61613', '#EECC86', '#34AE8E', '#636253', '#A26251'], 
+        ["#8acdea","#746d75","#8c4843","#9e643c","#ede6f2"],
+        ['#2CBDFE', '#47DBCD', '#9D2EC5',  '#F3A0F2', '#661D98', '#F5B14C'],
+        ['#845EC2','#ffc75f','#f9f871','#ff5e78'],
+        ['#fff3e6','#1a508b','#0d335d','#c1a1d3'],
+        ["#f72585","#b5179e","#7209b7","#560bad","#480ca8",
+        "#3a0ca3","#3f37c9","#4361ee","#4895ef","#4cc9f0"],
+        ["#22223b","#4a4e69","#9a8c98","#c9ada7","#f2e9e4"],
+        ["#d8f3dc","#b7e4c7","#95d5b2","#74c69d",
+        "#52b788","#40916c","#2d6a4f","#1b4332","#081c15"],
+        ["#ffbe0b","#fb5607","#ff006e","#8338ec","#3a86ff"],
+        ["#7400b8","#6930c3","#5e60ce","#5390d9","#4ea8de",
+        "#48bfe3","#56cfe1","#64dfdf","#72efdd","#80ffdb"],
+        ["#cc8b86","#f9eae1","#7d4f50","#d1be9c","#aa998f"],
+        ["#ff595e","#ffca3a","#8ac926","#1982c4","#6a4c93"],
+        ["#8c1c13","#bf4342","#e7d7c1","#a78a7f","#735751"],
+        ["#f72585","#b5179e","#7209b7","#560bad","#480ca8",
+        "#3a0ca3","#3f37c9","#4361ee","#4895ef","#4cc9f0"],
+        ["#006466","#065a60","#0b525b","#144552","#1b3a4b",
+        "#212f45","#272640","#312244","#3e1f47","#4d194d"]]
     Color_schemes = Color_schemes1
     for i in range(len(Color_schemes1)):
         Color_schemes.append(reversed(Color_schemes1[i]))

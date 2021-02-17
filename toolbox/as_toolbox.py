@@ -21,6 +21,7 @@ import sympy as sp
 from scipy import special
 import itertools
 from decimal import Decimal
+
 # In[Basic]
 def load_url_data(url): 
     """Load text data under url into numpy array. 
@@ -45,7 +46,8 @@ def load_url_data(url):
     
     Data = []
     for i in range(len(Start_Lines)):
-        kwargs = {'skiprows':Start_Lines[i], 'max_rows':(Stop_Lines[i]-Start_Lines[i])}
+        kwargs = {'skiprows':Start_Lines[i], 
+                  'max_rows':(Stop_Lines[i]-Start_Lines[i])}
         f = urllib.request.urlopen(url)
         data = np.loadtxt(f, **kwargs)
         Data.append(data)
@@ -91,7 +93,8 @@ def std_to_prob(std):
     return (1-(stats.norm.cdf(abs(std))-stats.norm.cdf(-abs(std))))
 
 def chauvenet_num(arr): 
-    """Compute for each entry probability*len(arr) assuming normal distribution."""
+    """Compute for each entry probability*len(arr) 
+    assuming normal distribution."""
     z = stats.zscore(arr)
     ch_num = len(arr)*std_to_prob(z)
     return ch_num
@@ -102,7 +105,8 @@ def exclude_chauvenet(arr, threshold = .5, removed = True):
         arr: array_like, input data
         threshold: float, (default 0.5) Threshold for chauvenet criterion 
         above which points are accepted
-        removed: bool, If True (default) return also array of removed points and prob.
+        removed: bool, 
+            If True (default) return also array of removed points and prob.
     Returns: 
         Array of remaining points, array of removed points(optional)
     """
@@ -120,23 +124,23 @@ def exclude_chauvenet(arr, threshold = .5, removed = True):
 
 def propagate_error(func, symb, cov=False):
     r"""
-    Given a functional relationship y = f(x1,x2,x3,...) and corresponding symbols 
-    symbols(y, x1, x2,...), computes the symbolic representation of function 
-    and uncertainty as well as latex code.
+    Given a functional relationship y = f(x1,x2,x3,...) and corresponding 
+    symbols symbols(y, x1, x2,...), computes the symbolic representation of
+    function and uncertainty as well as latex code.
 
     Parameters:
     -----------------
     func: callable, 
-        function that can be called by sympy (use e.g. sympy.sin, sympy.sqrt ...)
+        function that can be called by sympy (use e.g. sympy.function)
     symb: array_like, str
-        contains symbols which give name to variables, e.g. ["y","x1", "x2",... ]
+        contains symbols which give name to variables, e.g. ["y","x1","x2"...]
     cov: bool, (default = False)
         if True takes covariances between variables into account
 
     Returns:
     -----------
-    eq_f, eq_sf: symbolic repr. of the function and uncertainty, latex code can be accessed via 
-        latex()
+    eq_f, eq_sf: symbolic repr. of the function and uncertainty, latex code 
+                 can be accessed via latex()
     sf_lamb: function to compute uncertainty, if result symbolic use .evalf(), 
         takes first the mean values then uncertainties in the order of symbols
      
@@ -165,8 +169,8 @@ def propagate_error(func, symb, cov=False):
         Contr.append((Diff[i] * sig_symb[i + 1])**2)
     if cov:
         for i in range(num_cov):#contributions by covariance
-            #differentiate again, redundant, might be improved if one can find out in which order
-            #combinations are stored
+            #differentiate again, redundant, might be improved if one can
+            #find out in which order combinations are stored
             a = f.diff(sp.symbols("sigma_"+combis[i][0]))
             b = f.diff(sp.symbols("sigma_"+combis[i][1]))
             Contr.append(2*V_symb[i]*a*b)
@@ -199,13 +203,15 @@ def round_to_uncertainty(value, uncertainty):
     return round(Decimal(value).scaleb(-exponent).quantize(u)), u, exponent
     
 def round_result(mean, err):
-    """Print result with the right number of significant digits determined by the uncertainty."""
+    """Print result with the right number of significant digits 
+    determined by the uncertainty."""
     return print("{} ± {} (×10^{})".format(*round_to_uncertainty(mean, err)))
 
 
 # In[Draw rand numbers]
 def accept_reject(func, N, xmin, xmax, ymin, ymax, initial_factor = 2):
-    """Produce N random numbers distributed according to the function func using accept/reject method."""
+    r"""Produce N random numbers distributed according to the function
+        func using accept/reject method."""
     L = xmax-xmin
     N_i = initial_factor*N
     x_test = L*np.random.uniform(size=N_i)+xmin
@@ -215,12 +221,14 @@ def accept_reject(func, N, xmin, xmax, ymin, ymax, initial_factor = 2):
         x_func = x_test[mask_func]
         x_func = x_func[:N]
     else:
-        x_func = accept_reject(xmin,xmax,ymin,ymax,func,N,initial_factor = initial_factor*2)
+        x_func = accept_reject(
+            xmin,xmax,ymin,ymax,func,N,
+            initial_factor = initial_factor*2)
     return x_func
     
 def transform_method(inv_func,xmin, xmax, N, initial_factor = 2): 
-    r"""Produce N random numbers distributed according to f(x) given the inverse 
-    inv_func of
+    r"""Produce N random numbers distributed according to f(x) 
+    given the inverse inv_func of
     F(x) = \int_{-inf}^x f(x')dx' 
     """
     N_i = 2*N
@@ -229,7 +237,8 @@ def transform_method(inv_func,xmin, xmax, N, initial_factor = 2):
     if len(x)>N:
         x = x[:N]
     else:
-        x = transform_method(inv_func,xmin, xmax, N, initial_factor = initial_factor*2)
+        x = transform_method(
+            inv_func,xmin, xmax, N, initial_factor = initial_factor*2)
     return x
 
 # In[Tests]
@@ -258,7 +267,8 @@ def compute_FPR_TPR(X, y, c, var, larger =True ):
     """Compute FPR and TPR.
     Parameters:
         X: array_like,
-            input data, NxM with N samples M variables, assuming that positive has an entr
+            input data, NxM with N samples M variables, 
+            assuming that positive has an entr
         y: array_like,
             1 if positive 0 else
         c: float,
@@ -314,8 +324,9 @@ def func_Poisson(x, N, lamb) :
     else : 
         return 0.0
 
-def seq_freq_test(integers, seq_l = 3, N_bins = 21, show_plot = True, figsize = (12,8)):
-    """Compare sequence frequency with Poisson hypothesis.
+def seq_freq_test(
+    integers, seq_l = 3, N_bins = 21, show_plot = True, figsize = (12,8)):
+    r"""Compare sequence frequency with Poisson hypothesis.
     Poisson hypothesis is fitted and plotted.
     Author: Troels Petersen
     Parameters:
@@ -328,11 +339,13 @@ def seq_freq_test(integers, seq_l = 3, N_bins = 21, show_plot = True, figsize = 
         for j in range(seq_l):
             num+=integers[i+j]*int(10**(seq_l-1-j))
         seq.append(num)
-    poisson_counts, _ = np.histogram(seq, int(10**seq_l+1), range=(-0.5, 10**seq_l+.5))
+    poisson_counts, _ = np.histogram(
+        seq, int(10**seq_l+1), range=(-0.5, 10**seq_l+.5))
     xmin, xmax = -0.5, N_bins-.5
     
     fig, ax = plt.subplots(figsize=figsize)
-    hist_poisson = ax.hist(poisson_counts, N_bins, range=(xmin, xmax), label = 'Sequence distribution')
+    hist_poisson = ax.hist(poisson_counts, N_bins, 
+                           range=(xmin, xmax), label = 'Sequence distribution')
     counts, x_edges, _ = hist_poisson
     
     x_centers = 0.5*(x_edges[1:] + x_edges[:-1])
@@ -341,7 +354,8 @@ def seq_freq_test(integers, seq_l = 3, N_bins = 21, show_plot = True, figsize = 
     sy = np.sqrt(y)
 
     chi2_object = Chi2Regression(func_Poisson, x, y, sy)
-    minuit = Minuit(chi2_object, pedantic=False, N = 10**seq_l, lamb = poisson_counts.mean())
+    minuit = Minuit(chi2_object, pedantic=False, 
+                    N = 10**seq_l, lamb = poisson_counts.mean())
     minuit.migrad()     # Launch the fit
 
     chi2_val = minuit.fval
@@ -357,7 +371,7 @@ def seq_freq_test(integers, seq_l = 3, N_bins = 21, show_plot = True, figsize = 
     }
 
     ax.text(0.62, 0.99, nice_string_output(d), family='monospace',
-            transform=ax.transAxes, fontsize=14, verticalalignment='top');
+            transform=ax.transAxes, fontsize=14, verticalalignment='top')
 
     binwidth = (xmax-xmin) / N_bins 
     xaxis = np.linspace(xmin, xmax, 500)

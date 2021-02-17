@@ -36,7 +36,8 @@ def double_gauss_one_mean(x, N, f, mu, sig1, sig2):
     Returns: N*(f*G(mu,sig1)+(1-f)*G(mu,sig2))"""
     return N*(f*stats.norm.pdf(x,mu,sig1)+(1-f)*stats.norm.pdf(x,mu,sig2))
 
-def produce_hist_values(x_all, N_bins, x_range = None, only_nonzero = False, log = False):
+def produce_hist_values(x_all, N_bins, x_range = None, 
+                        only_nonzero = False, log = False):
     r"""
     Produce histogram
     
@@ -65,10 +66,13 @@ def produce_hist_values(x_all, N_bins, x_range = None, only_nonzero = False, log
     if x_range==None:
         x_range = (x_all.min(), x_all.max())
     if log:
-        N_bins = np.logspace(np.log10(x_range[0]),np.log10(x_range[1]), N_bins)
-    counts, bin_edges = np.histogram(x_all, bins=N_bins, range=x_range)
-    x, binwidth = (bin_edges[1:] + bin_edges[:-1])/2, bin_edges[1]-bin_edges[0]
-    y, sy = counts, np.sqrt(counts) #assume that the bin count is Poisson distributed.
+        N_bins = np.logspace(np.log10(x_range[0]),
+                             np.log10(x_range[1]), N_bins)
+    counts, bin_edges = np.histogram(x_all, bins=N_bins, 
+                                     range=x_range)
+    x = (bin_edges[1:] + bin_edges[:-1])/2 
+    binwidth = bin_edges[1]-bin_edges[0]
+    y, sy = counts, np.sqrt(counts) #assume: the bin count is Poisson distributed.
     if only_nonzero:
         mask = counts>0
         x, y, sy = x[mask], y[mask], sy[mask]
@@ -132,7 +136,8 @@ def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
             fit_object = Chi2Regression(fit_func, x, y, sy, observed = False)
     
     elif fit_type == 'bllh':
-        fit_object = BinnedLH(fit_func, x_all, bins=N_bins, bound=x_range, extended=True)
+        fit_object = BinnedLH(fit_func, x_all, bins=N_bins, 
+                              bound=x_range, extended=True)
     
     elif fit_type == 'ullh':
         fit_object = UnbinnedLH(fit_func, x_all, extended=True)
@@ -149,13 +154,15 @@ def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
     for n,v in zip(p0_names, p0_values):
         kwdarg[n]=v
     
-    minuit_obj = Minuit(fit_object, **kwdarg, pedantic=False, print_level=print_level )
+    minuit_obj = Minuit(fit_object, **kwdarg, pedantic=False, 
+                        print_level=print_level )
     minuit_obj.migrad()
     return minuit_obj, x, y, sy
     
 
 def chi2_fit_func(
-    x,y,sy,func, p0, Range = None, fit_label = '', Text_pos = (0.01,.99), kwargs = {}):
+    x,y,sy,func, p0, Range = None, fit_label = '', 
+    Text_pos = (0.01,.99), kwargs = {}):
         
     """Fit a single function to data, calls chi2_fit_mult_func"""
     if Range==None:
@@ -166,16 +173,21 @@ def chi2_fit_func(
     return ax, fig, Popt[0], Pcov[0]
 
 
-def chi2_fit_mult_func(X,Y,SY,functions, P0, Ranges,absolute_sigma = True, plot_res = False, plot_res_distr = False,
-                       show_plot = True, save_plot=False, figname = None, xlabel = 'x',ylabel='', 
-                       data_label='Data, with Poisson errors',Fit_label = ['','',''], 
-                       Text_pos = [(0.01,.99), (.3,.99),(.4,.99)], figsize = (10,5), y_range= None, 
-                       legend_loc = 0, legend_fs =20, label_fs = 25, ticksize = 20, res_legend_fs =18,
-                       res_label = 'res. with error', res_legend_loc = 0, res_bins = 30, inset_bbox = (2,3),
-                       range_res_distr = (-.5,.5), res_legend_off = False, axis= None, figure = None, 
-                       legend_off = False, x_show_range = None, text_fs = 14, dpi = 80, xlogscale = False,
-                       ylogscale = False, show_CI = False, color_scheme = 0, style = 'ggplot', Colors = None,
-                       ecolor = 'deepskyblue', capsize = 3, capthick = 0.3, markersize = 6, elinewidth = .9):
+def chi2_fit_mult_func(
+    X,Y,SY,functions, P0, Ranges,absolute_sigma = True,
+    plot_res = False, plot_res_distr = False, show_plot = True, 
+    save_plot=False, figname = None, xlabel = 'x',ylabel='', 
+    data_label='Data, with Poisson errors',Fit_label = ['','',''], 
+    Text_pos = [(0.01,.99), (.3,.99),(.4,.99)], figsize = (10,5), 
+    y_range= None, legend_loc = 0, legend_fs =20, label_fs = 25,
+    ticksize = 20, res_legend_fs =18, res_label = 'res. with error', 
+    res_legend_loc = 0, res_bins = 30, inset_bbox = (2,3),
+    range_res_distr = (-.5,.5), res_legend_off = False, axis= None,
+    figure = None, legend_off = False, x_show_range = None, text_fs = 14,
+    dpi = 80, xlogscale = False, ylogscale = False, show_CI = False, 
+    color_scheme = 0, style = 'ggplot', Colors = None,
+    ecolor = 'deepskyblue', capsize = 3, capthick = 0.3, markersize = 6, 
+    elinewidth = .9):
     r"""
     Fit piecewise defined functions, plot data with fit. 
     
@@ -207,7 +219,8 @@ def chi2_fit_mult_func(X,Y,SY,functions, P0, Ranges,absolute_sigma = True, plot_
     
     
     if plot_res:
-        fig, axes = plt.subplots(2,figsize = figsize,gridspec_kw={'height_ratios': [2.5, 1]})
+        fig, axes = plt.subplots(2,figsize = figsize,
+                                 gridspec_kw={'height_ratios': [2.5, 1]})
         ax = axes[0]
         ax_r = axes[1]
     else:
@@ -226,9 +239,10 @@ def chi2_fit_mult_func(X,Y,SY,functions, P0, Ranges,absolute_sigma = True, plot_
     if not(np.count_nonzero(SY == 0)==0):
         raise Exception('One of the entries of sy is 0')
     
-    ax.errorbar(X, Y, yerr=SY, marker = '.', mec=ecolor, color = ecolor, elinewidth=elinewidth, 
-             capsize = capsize, capthick=capthick, linestyle = 'none',markersize = markersize,
-             label =data_label)#plot data
+    ax.errorbar(X, Y, yerr=SY, marker = '.', mec=ecolor, color = ecolor, 
+        	    elinewidth=elinewidth, capsize = capsize, capthick=capthick, 
+                linestyle = 'none',markersize = markersize, 
+                label =data_label)#plot data
     Popt, Pcov = [], []#lists to store fitted params
     x_res, y_res, sy_res = [],[],[]
     
@@ -246,7 +260,8 @@ def chi2_fit_mult_func(X,Y,SY,functions, P0, Ranges,absolute_sigma = True, plot_
         fit_label = Fit_label[i]
         x, y, sy = X[mask], Y[mask], SY[mask]
         p0 = P0[i]
-        popt, pcov = curve_fit(func, x,y, p0 = p0, sigma = sy, absolute_sigma=True)
+        popt, pcov = curve_fit(func, x,y, p0 = p0, 
+                               sigma = sy, absolute_sigma=True)
         Popt.append(popt)
         Pcov.append(pcov)
         sigma_popt = np.sqrt(np.diag(pcov))
@@ -271,9 +286,11 @@ def chi2_fit_mult_func(X,Y,SY,functions, P0, Ranges,absolute_sigma = True, plot_
         
         names = ['Chi2/NDF', 'Prob']
         if Prob>0.001:
-            values = [ "{:.2f} / {:d}".format(chi2_val, Ndof), "{:.3f}".format(Prob),]
+            values = ["{:.2f} / {:d}".format(chi2_val, Ndof), 
+                      "{:.3f}".format(Prob),]
         else:
-            values = [ "{:.2f} / {:d}".format(chi2_val, Ndof), "{:.3e}".format(Prob),]
+            values = ["{:.2f} / {:d}".format(chi2_val, Ndof), 
+                      "{:.3e}".format(Prob),]
         for i in range(len(p0)):
             varname = func.__code__.co_varnames[1+i]
             names.append(varname)
