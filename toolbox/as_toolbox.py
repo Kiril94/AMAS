@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 #importlib.reload(ExternalFunctions)
 from toolbox.ExternalFunctions import Chi2Regression
 from toolbox.ExternalFunctions import nice_string_output
+from toolbox.ExternalFunctions import compute_f
+from iminuit.util import make_func_code
+from iminuit import describe
 from iminuit import Minuit
 import sympy as sp
 from scipy import special
@@ -29,14 +32,22 @@ def load_url_data(url):
     f = urllib.request.urlopen(url)
     Text_encoded = f.readlines()
     Text = [Text_encoded[i].decode("utf-8") for i in range(len(Text_encoded))]
-    i =0
     Start_Lines = []
     Stop_Lines = []
-
+    if Text[0][0].isdigit() or Text[0][1].isdigit():
+            Start_Lines.append(0)
+            
     for i in range(len(Text)-1):
-        if not(Text[i][0].isdigit()) and (Text[i+1][0].isdigit()):
+        col0, col1 = 0, 0
+        if Text[i][col0]==' ':
+            col0 = 1
+            
+        if Text[i+1][col1]==' ':
+            col1 = 1
+            
+        if not(Text[i][col0].isdigit()) and (Text[i+1][col1].isdigit()):
             Start_Lines.append(i+1)
-        elif not(Text[i+1][0].isdigit()) and (Text[i][0].isdigit()):
+        elif not(Text[i+1][col1].isdigit()) and (Text[i][col0].isdigit()):
             Stop_Lines.append(i+1)
         else:
             pass
@@ -51,8 +62,12 @@ def load_url_data(url):
         f = urllib.request.urlopen(url)
         data = np.loadtxt(f, **kwargs)
         Data.append(data)
-    return Data 
-        
+    if len(Data) ==1:
+        return Data[0]
+    else:
+        return Data 
+    
+    
 def weighted_avg(arr_mu, arr_sig):
     r"""
     Compute weighted average with uncertainty
@@ -209,11 +224,12 @@ def round_result(mean, err):
 
 
 # In[Draw rand numbers]
-def accept_reject(func, N, xmin, xmax, ymin, ymax, initial_factor = 2):
+def accept_reject(func, N, xmin, xmax, ymax, initial_factor = 2, random_state = 1):
     r"""Produce N random numbers distributed according to the function
         func using accept/reject method."""
+    np.random.seed(random_state)
     L = xmax-xmin
-    N_i = initial_factor*N
+    N_i = int(initial_factor*N)
     x_test = L*np.random.uniform(size=N_i)+xmin
     y_test = ymax*np.random.uniform(size = N_i)
     mask_func = y_test<func(x_test)
@@ -222,8 +238,8 @@ def accept_reject(func, N, xmin, xmax, ymin, ymax, initial_factor = 2):
         x_func = x_func[:N]
     else:
         x_func = accept_reject(
-            xmin,xmax,ymin,ymax,func,N,
-            initial_factor = initial_factor*2)
+            func, N, xmin,xmax, ymax,
+            initial_factor = int(initial_factor*2))
     return x_func
     
 def transform_method(inv_func,xmin, xmax, N, initial_factor = 2): 
@@ -238,7 +254,7 @@ def transform_method(inv_func,xmin, xmax, N, initial_factor = 2):
         x = x[:N]
     else:
         x = transform_method(
-            inv_func,xmin, xmax, N, initial_factor = initial_factor*2)
+            inv_func,xmin, xmax, N, initial_factor = initial_factor*2 )
     return x
 
 # In[Tests]
@@ -383,4 +399,23 @@ def seq_freq_test(
     else:
         plt.close(fig)
     return chi2_prob, fig,ax
+
+
+class UNLLH:  # override the class with a better one
+    """Class for computing the unbinned negative log likelihood. The instance can be passed to a minimizer."""
+    def __init__(self, f, data):
+    
+        self.f = f  # model predicts PDF for given x
+        self.data = np.array(data)
+        self.func_code = make_func_code(describe(self.f)[1:])#Function signature for the minimizer
+    def __call__(self, *par):  # par are a variable number of model parameters
+        
+        logf = np.zeros_like(self.data)    
+        # compute the function value
+        f = compute_f(self.f, self.data, *par)
+        # compute the sum of the log values: the LLH
+        logf = np.log(f)
+        llh = -np.sum(logf)
+        
+        return llh
 

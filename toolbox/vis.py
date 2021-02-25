@@ -19,10 +19,10 @@ def nice_plot(
     data_label=' ', figsize = (10,5), y_range= None, legend_loc = 0, 
     legend_fs =20, label_fs = 25, ticksize = 20, axis= None, 
     figure = None, legend_off = False, x_show_range = None, text_fs = 14, 
-    dpi = 80, xlogscale = False, ylogscale = False, color = 'blue', 
-    style = 'ggplot', linestyle = 'solid', ecolor = 'deepskyblue', 
+    dpi = 80, xlogscale = False, ylogscale = False, color = 'skyblue', 
+    plot_style = 'ggplot', linestyle = 'solid', ecolor = 'deepskyblue', 
     capsize = 3, capthick = 0.3, err_markersize = 6,  elinewidth = .9, 
-    alpha = 1, scr_markersize = 3, scr_markerstyle = 'o'):
+    alpha = 1, scr_markersize = 30, scr_markerstyle = 'o', linewidth = 3, fill_under_curve = False, fill_color = 'skyblue'):
     r"""
     Simple x-y plot. 
     
@@ -43,7 +43,7 @@ def nice_plot(
         fig = figure
     else:
         fig, ax = plt.subplots(figsize=figsize)
-      
+    plt.style.use(plot_style)
     const_err = (type(SY)==float)
     if const_err:
         SY = np.ones(len(X))*SY
@@ -58,8 +58,10 @@ def nice_plot(
         alpha = alpha, marker = scr_markerstyle)
     else:
         ax.plot(X,Y, color = color,  label =data_label, 
-                linestyle = linestyle, alpha = alpha)
-    plt.style.use(style)
+                linestyle = linestyle, alpha = alpha, linewidth = linewidth)
+    
+    if fill_under_curve:
+        plt.fill_between(X,Y, color = fill_color)
     
     ax.set_ylabel(ylabel, fontsize = label_fs)
     ax.tick_params(axis = 'both',labelsize  = ticksize)
@@ -95,7 +97,7 @@ def nice_plot(
 
 
 def nice_histogram(
-    x_all, N_bins, show_plot = False, plot_hist = False, plot_errors = True, 
+    x_all, N_bins, poisson_error = False, show_plot = False, plot_hist = False, plot_errors = True, 
     plot_legend = True, save = False, figname = '', x_range = None, 
     data_label = 'Data, histogram', data_label_hist = '',figsize = (12,6), 
     histtype = 'step', color_hist = 'orange', xlabel = 'x', 
@@ -109,9 +111,17 @@ def nice_histogram(
     if not(x_range==None):
         mask_x = (x_all>x_range[0]) & (x_all<x_range[1])
         x_all = x_all[mask_x]
-    x,y,sy, binwidth = fits.produce_hist_values(x_all,N_bins, 
-                                                x_range = x_range,
-                                                log = xlog_scale)
+      
+    if poisson_error:
+        x,y,sy, binwidth = fits.produce_hist_values(
+            x_all,N_bins, x_range = x_range,
+            log = xlog_scale, poisson_error = poisson_error)
+    else:
+        x,y, binwidth = fits.produce_hist_values(
+            x_all,N_bins, x_range = x_range,
+            log = xlog_scale, poisson_error = poisson_error)
+
+        
     if not(axis==None):
         ax = axis
         fig = figure
@@ -124,12 +134,16 @@ def nice_histogram(
                 histtype=histtype, linewidth=hist_linewidth, color=color_hist, 
                 label=data_label_hist, alpha = hist_alpha, 
                 linestyle = hist_linestyle)
-    if plot_errors:
-        ax.errorbar(
-            x, y, yerr=sy, xerr=0.0, label=data_label, marker = '.', 
-            mec=ecolor, color = ecolor, elinewidth=elinewidth, 
-            capsize = capsize, capthick=capthick, linestyle = 'none',
-            markersize = markersize)
+    if poisson_error:
+        if plot_errors:
+            ax.errorbar(
+                x, y, yerr=sy, xerr=0.0, label=data_label, marker = '.', 
+                mec=ecolor, color = ecolor, elinewidth=elinewidth, 
+                capsize = capsize, capthick=capthick, linestyle = 'none',
+                markersize = markersize)
+        else:
+            print('no uncertainties were given, if you want to assume poisson errors set poisson_errors to True')
+            
     ax.set_xlabel(xlabel, fontsize = label_fs)
     ax.set_ylabel(ylabel, fontsize = label_fs)
     ax.tick_params(axis ='both', labelsize = ticks_lsize)
@@ -151,8 +165,10 @@ def nice_histogram(
     else:
         plt.close(fig)
         
-    
-    return x, y, sy, binwidth, fig, ax
+    if poisson_error:
+        return x, y, sy, binwidth, fig, ax
+    else:
+        return x, y, binwidth, fig, ax
 
 
 def scatter_hist(X0,X1,Y0,Y1, ax, ax_histx, ax_histy, N_bins_x, N_bins_y,

@@ -36,7 +36,7 @@ def double_gauss_one_mean(x, N, f, mu, sig1, sig2):
     Returns: N*(f*G(mu,sig1)+(1-f)*G(mu,sig2))"""
     return N*(f*stats.norm.pdf(x,mu,sig1)+(1-f)*stats.norm.pdf(x,mu,sig2))
 
-def produce_hist_values(x_all, N_bins, x_range = None, 
+def produce_hist_values(x_all, N_bins, x_range = None, poisson_error = False,
                         only_nonzero = False, log = False):
     r"""
     Produce histogram
@@ -72,11 +72,22 @@ def produce_hist_values(x_all, N_bins, x_range = None,
                                      range=x_range)
     x = (bin_edges[1:] + bin_edges[:-1])/2 
     binwidth = bin_edges[1]-bin_edges[0]
-    y, sy = counts, np.sqrt(counts) #assume: the bin count is Poisson distributed.
+    y = counts  #assume: the bin count is Poisson distributed.
+    
+    if poisson_error:
+        sy = np.sqrt(counts)
+    
     if only_nonzero:
         mask = counts>0
-        x, y, sy = x[mask], y[mask], sy[mask]
-    return x, y, sy, binwidth
+        x, y = x[mask], y[mask] 
+        if poisson_error:
+            sy =  sy[mask]
+            
+    if poisson_error:
+        return x, y, sy, binwidth
+    else:
+        return x, y, binwidth
+    
 
 def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
              observed = True, print_level = 1): 
