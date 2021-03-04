@@ -6,11 +6,15 @@ Created on Sat Jan 16 15:18:15 2021
 """
 import numpy as np
 import matplotlib.pyplot as plt
-#from mlxtend.plotting import plot_decision_regions
+import matplotlib as mpl
+
 from scipy import stats
 from toolbox import fits
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib import ticker
+
 
 # In[General plots]
 def nice_plot(
@@ -23,7 +27,7 @@ def nice_plot(
     plot_style = 'ggplot', linestyle = 'solid', ecolor = 'deepskyblue', 
     capsize = 3, capthick = 0.3, err_markersize = 6,  elinewidth = .9, 
     alpha = 1, scr_markersize = 30, scr_markerstyle = 'o', linewidth = 3, fill_under_curve = False, 
-    fill_color = 'skyblue'):
+    fill_color = 'skyblue', color_scheme = None):
     r"""
     Simple x-y plot. 
     
@@ -33,6 +37,7 @@ def nice_plot(
     X, Y, SY: lists of array_like,
         input data, if produced from histogram, pass ONLY values where Y>0
     errorbar: bool, False by default, if True errorbars are plotted 
+    color_scheme: tuple of integers, first specifies color scheme, second the color
     Returns:
     -------
     ax: axis object
@@ -44,6 +49,14 @@ def nice_plot(
         fig = figure
     else:
         fig, ax = plt.subplots(figsize=figsize)
+    if not(color_scheme==None):
+        if not(type(color_scheme)==tuple):
+            print('color_scheme is not a tuple!')
+        else:
+            line_color = Color_palette(color_scheme[0])[color_scheme[1]]
+    else:
+        line_color = color
+
     plt.style.use(plot_style)
     const_err = (type(SY)==float)
     if const_err:
@@ -54,11 +67,12 @@ def nice_plot(
                     linestyle = 'none',markersize = err_markersize,
                     label =data_label, alpha = alpha)#plot data
     elif scatter:
-        ax.scatter(X,Y, color = color,  label =data_label, 
-                   linestyle = linestyle, s = scr_markersize,
-        alpha = alpha, marker = scr_markerstyle)
+        ax.scatter(
+            X,Y, color = line_color,  label =data_label, 
+            linestyle = linestyle, s = scr_markersize,
+            alpha = alpha, marker = scr_markerstyle)
     else:
-        ax.plot(X,Y, color = color,  label =data_label, 
+        ax.plot(X,Y, color = line_color,  label =data_label, 
                 linestyle = linestyle, alpha = alpha, linewidth = linewidth)
     
     if fill_under_curve:
@@ -94,19 +108,21 @@ def nice_plot(
     else:
         plt.close(fig)
         
-    return ax, fig
+    return fig, ax
 
-
+#########################
 def nice_histogram(
-    x_all, N_bins, poisson_error = False, show_plot = False, plot_hist = True, plot_errors = True, 
-    plot_legend = False, save = False, figname = '', x_range = None, 
-    data_label = 'Data, histogram', data_label_hist = '',figsize = (12,6), 
-    histtype = 'step', color_hist = 'orange', xlabel = 'x', 
-    ylabel = 'Frequency', label_fs = 20, legend_fs = 18, legend_loc = 0, legend_ncol = 1, legend_color = 'white',
-    ticks_lsize = 20, xlog_scale = False, ylog_scale = False, axis = None, 
-    figure = None, dpi = 80, ecolor = 'deepskyblue', capsize = 3, 
-    capthick = 0.3, markersize = 6, elinewidth = .9, hist_alpha = .9,
-    hist_linestyle = 'solid', hist_linewidth = 2, plot_style = 'ggplot'):
+    x_all, N_bins, poisson_error = False, show_plot = False, plot_hist = True, 
+    plot_errors = True, plot_legend = False, save = False, figname = '', 
+    x_range = None, data_label = 'Data, histogram', data_label_hist = '',
+    figsize = (12,6), histtype = 'step', color_hist = 'orange', xlabel = 'x', 
+    ylabel = 'Frequency', label_fs = 20, legend_fs = 18, legend_loc = 0, 
+    legend_ncol = 1, legend_color = 'white', ticks_size = 20, 
+    xlog_scale = False, ylog_scale = False, axis = None, figure = None, 
+    dpi = 80, ecolor = 'deepskyblue', capsize = 3, capthick = 0.3, 
+    markersize = 6, elinewidth = .9, hist_alpha = .9, hist_linestyle = 'solid', 
+    hist_linewidth = 2, plot_style = 'ggplot'):
+
     """Produce a nice histogram.
     Returns: x, y, sy, binwidth, fig, ax."""
     if not(x_range==None):
@@ -147,7 +163,7 @@ def nice_histogram(
             
     ax.set_xlabel(xlabel, fontsize = label_fs)
     ax.set_ylabel(ylabel, fontsize = label_fs)
-    ax.tick_params(axis ='both', labelsize = ticks_lsize)
+    ax.tick_params(axis ='both', labelsize = ticks_size)
     if xlog_scale:
         ax.set_xscale('log')
     if ylog_scale:
@@ -171,7 +187,80 @@ def nice_histogram(
     else:
         return x, y, binwidth, fig, ax
 
+#############################
+def nice_contour(
+    xx, yy, z, levels = 40, cmap = 'inferno', colors = None, figsize = (12,6),
+    filled = True, figure = None, axis = None, plot_style = 'ggplot', 
+    show_cbar = True, cbar_size = '5%', cbar_pad = 0.1, label_fs = 20, 
+    tick_size = 20, cbar_tick_labelsize = 20,  cbar_orientation = 'vertical', cbar_label = '', 
+    cbar_label_fs = 20, cbar_num_ticks = 5, clabels = None, labels_inline = True,
+    clabel_fs = 18, plot_clabels = False, linewidths = 1.5, linestyles = 'solid', 
+    plot_legend = False, legend_loc = 0, legend_fs = 20,
+    xlabel = '', ylabel = '', show_plot = True, save = False, figname = '', 
+    dpi = 80):
+    """Producing nice contour plot. 
+    Parameters:
+        xx, yy, zz: xx and yy are meshgrids, z is a 2d matrix
+    Returns:
+        fig, ax
+    """
 
+    if not(axis==None):
+        ax = axis
+        fig = figure
+    else:
+        fig, ax = plt.subplots(figsize=figsize)  
+    plt.style.use(plot_style)
+    if colors!=None:
+        cmap = None
+
+    if filled:
+        im = ax.contourf(xx, yy, z, levels = levels, cmap= cmap)
+    else:
+        im = ax.contour(
+            xx, yy, z, levels = levels, cmap= cmap, colors = colors,
+            linestyles = linestyles, linewidths = linewidths)
+        if plot_clabels:
+            ax.clabel(im, inline=labels_inline, fontsize=clabel_fs)
+        for i in range(len(clabels)):
+            im.collections[i].set_label(clabels[i])
+        if plot_legend:
+            ax.legend(loc=legend_loc, fontsize = legend_fs)
+    #set axes params
+    ax.set_xlabel(xlabel, fontsize = label_fs)
+    ax.set_ylabel(ylabel, fontsize = label_fs)
+    ax.tick_params(axis = 'both', labelsize  = tick_size)
+
+    #colorbar
+    if show_cbar:
+        divider = make_axes_locatable(ax)
+        if cbar_orientation=='vertical':
+            cbar_loc = 'right'
+        else:
+            cbar_loc = 'top'
+
+        cax = divider.append_axes(cbar_loc, size=cbar_size, pad= cbar_pad)
+        cbar = fig.colorbar(im, cax=cax, orientation=cbar_orientation)
+        cbar.ax.tick_params(labelsize=cbar_tick_labelsize) 
+        if cbar_orientation=='vertical':
+            cbar.ax.set_ylabel(cbar_label, fontsize = cbar_label_fs)
+        else:
+            cbar.ax.set_title(cbar_label, fontsize = cbar_label_fs, color = ax)
+            cax.xaxis.set_ticks_position('top')
+        tick_locator = ticker.MaxNLocator(nbins=cbar_num_ticks)
+        cbar.locator = tick_locator
+        cbar.update_ticks()
+
+    if save:
+        fig.tight_layout()
+        fig.savefig(figname, dpi = dpi)
+    
+    if show_plot:
+        plt.show(fig)
+    else:
+        plt.close(fig)
+    return fig, ax
+#######################################
 def scatter_hist(X0,X1,Y0,Y1, ax, ax_histx, ax_histy, N_bins_x, N_bins_y,
                  histlabel0, histlabel1):
     """Helper function to create additional axes with histograms."""
@@ -199,7 +288,7 @@ def scatter_hist(X0,X1,Y0,Y1, ax, ax_histx, ax_histy, N_bins_x, N_bins_y,
                   orientation='horizontal',alpha = .8)
     ax_histx.legend(fontsize = 12)
 
-
+###########################################
 def plot_classification(X, y, classifier, N_bins_x = 40, N_bins_y = 40, 
                         label0='type I', label1 = 'type II', 
                         histlabel0 = 'type I', histlabel1 = 'type II',
@@ -292,6 +381,7 @@ def plot_classification(X, y, classifier, N_bins_x = 40, N_bins_y = 40,
     
     return classifier, ax_scatter, ax_histx, ax_histy, fig
 
+###########################
 def add_zoom_inset(ax, zoom,loc, x,y, xlim, ylim , sy = None, 
                    xlabel = '', ylabel = '', label_fs = 18,
                    mark_inset_loc = (3,1), borderpad = 4):
@@ -330,7 +420,7 @@ def add_zoom_inset(ax, zoom,loc, x,y, xlim, ylim , sy = None,
 
 # In[Random Numbers] 
 
-
+############################
 def create_1d_hist(ax, values, bins, x_range, title):
     """Helper function for show_int_distribution. (Author: Troels Petersen)"""
     ax.hist(values, bins, x_range, histtype='step', density=False, lw=2)         
@@ -338,6 +428,7 @@ def create_1d_hist(ax, values, bins, x_range, title):
     hist_data = np.histogram(values, bins, x_range)
     return hist_data
 
+################################
 def get_chi2_ndf( hist, const):
     """Helper function for show_int_distribution. (Author: Troels Petersen)"""
     data = hist[0]
@@ -346,6 +437,7 @@ def get_chi2_ndf( hist, const):
     ndof = data.size
     return chi2, ndof
 
+#################################
 def show_int_distribution(integers, save_plot = True, 
                           figname = '', show_plot= False):
     """Show histogram of integers, to see if random.(Author: Troels Petersen)
@@ -392,6 +484,7 @@ def show_int_distribution(integers, save_plot = True,
 
 # In[Helper functions]
 
+##################################
 def Color_palette(k):
     """Takes integer, Returns color scheme."""
     Color_schemes1 = [

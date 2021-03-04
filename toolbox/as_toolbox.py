@@ -401,7 +401,7 @@ def seq_freq_test(
     return chi2_prob, fig,ax
 
 
-class UNLLH:  # override the class with a better one
+class UNLLH: 
     """Class for computing the unbinned negative log likelihood. The instance can be passed to a minimizer."""
     def __init__(self, f, data):
     
@@ -418,4 +418,37 @@ class UNLLH:  # override the class with a better one
         llh = -np.sum(logf)
         
         return llh
-
+    
+class UNLLH_scan: 
+    """Class for scanning the 1d/2d landscape of the NLLH."""
+    def __init__(self, f, data):
+    
+        self.f = f  # model predicts PDF for given x
+        self.data = np.array(data)
+        self.func_code = make_func_code(describe(self.f)[1:])#Function signature for the minimizer
+    def __call__(self, *par):  # par are a variable number of model parameters
+        
+        logf = np.zeros_like(self.data)    
+        # compute the function value
+        arr_count = 0
+        index, par_arr = [], []
+        par = list(par)
+        for i in range(len(par)):
+            if not(type(par[i])==float or type(par[i])==int):#separate into float and array to create a meshgrid
+                par_arr.append(par[i]) #stroe arrays into extra list
+                index.append(i) #keep track of indices 
+        Par_grid = np.meshgrid(*par_arr) #create n-dim meshgrid
+        Par_grid_expanded = [None]*len(Par_grid)
+        for i in range(len(Par_grid)):
+            Par_grid_expanded[i] = np.expand_dims(Par_grid[i], len(index)) #expand dimensions to make function call in parallel
+            #this allows to broadcast data and params
+            Par_grid_expanded[i] = np.repeat(Par_grid_expanded[i], len(self.data), axis = len(index)) 
+            par[index[i]] = Par_grid_expanded[i] #store back into par
+        #now function can be called
+        f = compute_f(self.f, self.data, *par)
+        # compute the sum of the log values: the LLH
+        
+        logf = np.log(f)
+        llh = -np.sum(logf, axis = len(index))#sum over the axis that represents the data points(last axis)
+        
+        return Par_grid, llh
