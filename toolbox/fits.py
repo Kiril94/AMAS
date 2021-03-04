@@ -138,7 +138,7 @@ def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
     
     if x_range == None:
         x_range = (x_all.min(), x_all.max())
-    x, y, sy, binwidth = produce_hist_values(x_all, N_bins,x_range = x_range)
+    x, y, sy, binwidth = produce_hist_values(x_all, N_bins,x_range = x_range, poisson_error = True)
     
     if fit_type == 'chi2':
         if observed:
