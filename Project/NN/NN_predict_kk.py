@@ -14,7 +14,7 @@ sys.path.append(f"{basepath}")
 sys.path.append(f"{basepath}/NN")
 model_paths = f"{basepath}/Trained_models"
 from keras import models
-
+import matplotlib.pyplot as plt
 
 # In[Load data]
 
@@ -25,8 +25,8 @@ X_train = Data_dict['X_train'].astype('float32')
 Y_train = Data_dict['Y_train'].astype('float32')
 X_val = Data_dict['X_val'].astype('float32')
 Y_val = Data_dict['Y_val'].astype('float32')
-Y_train = np.expand_dims(Y_train, axis = 1)
-Y_val = np.expand_dims(Y_val, axis = 1)
+#Y_train = np.expand_dims(Y_train, axis = 1)
+#Y_val = np.expand_dims(Y_val, axis = 1)
 
 # In[Function for predictions]
 def predict_prob(model, x, batch_size=2048):
@@ -39,24 +39,31 @@ def predict_prob(model, x, batch_size=2048):
     return mean, sigma
 
 # In[Make predictions]
-model_name = 'Test'
+model_name = 'Model2'
 model_path = f"{model_paths}/{model_name}"
-filepath_best = f"{model_path}/best_weights.hdf5"
+filepath_best = f"{model_path}/model.hdf5"
 model = models.load_model(filepath_best, compile = False)
+probabilistic = False
 
-Weights_and_biases = model.layers[0].get_weights()
-Weights = Weights_and_biases[0]
-    
-for i in range(len(model.layers)):
-    layer = model.layers[i].get_weights()#[0]
-    shape = np.shape(layer)
-    print(shape)
-    
-Y_val_pred, sigma_val_pred = predict_prob(
-    model, X_val)
+if probabilistic:
+    Y_val_pred, sigma_val_pred = predict_prob(
+        model, X_val)
+else:
+    Y_val_pred = model.predict(
+        X_val).reshape([len(Y_val)])
 
 # In[Compare]
 print(Y_val_pred.shape)
 print(Y_val.shape)
-print(Y_val_pred[200], sigma_val_pred[200])
-print(Y_val[200])
+print(Y_val_pred[2])#, sigma_val_pred[1])
+print(Y_val[2])
+# In[]
+#plt.hist(Y_val_pred,40)
+#plt.hist(Y_val_pred[:,0]-Y_val, 40)
+#plt.hist(X_val[:,:,-2].flatten(), 40)
+print(Y_val_pred.max(), Y_val_pred.min())
+plt.scatter(np.arange(len(Y_val)), Y_val)
+plt.scatter(np.arange(len(Y_val)), Y_val_pred)
+#plt.yscale('log')
+# In[]
+plt.scatter(np.arange(len(Y_val)), (Y_val_pred-Y_val)/Y_val)
