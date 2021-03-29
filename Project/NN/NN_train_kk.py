@@ -6,8 +6,8 @@ Created on Mon Mar 22 12:13:27 2021
 """
 import os
 import sys
-path_parent = os.path.dirname(os.getcwd())
-os.chdir(path_parent)
+#path_parent = os.path.dirname(os.getcwd())
+#os.chdir(path_parent)
 basepath = os.path.abspath('')
 
 project_path = os.path.dirname(basepath)
@@ -34,10 +34,10 @@ X_train = Data_dict['X_train'].astype('float32')
 Y_train = Data_dict['Y_train'].astype('float32')
 X_val = Data_dict['X_val'].astype('float32')
 Y_val = Data_dict['Y_val'].astype('float32')
-#Y_train = np.expand_dims(Y_train, axis = 1)
-#Y_val = np.expand_dims(Y_val, axis = 1)
-print(Y_val.shape)
-Data = [X_train, Y_train, X_val, Y_val]
+Y_train = np.expand_dims(Y_train, axis = 1)
+Y_val = np.expand_dims(Y_val, axis = 1)
+print(Y_train.shape, Y_val.shape)
+#Data = [X_train, Y_train, X_val, Y_val]
 plt.hist(Y_train, 50)
 # In[Train functions]
 def train_new_model(Data, opts):

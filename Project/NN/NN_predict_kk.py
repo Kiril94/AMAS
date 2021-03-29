@@ -7,26 +7,28 @@ Created on Mon Mar 22 13:50:32 2021
 import numpy as np
 import os
 import sys
-path_parent = os.path.dirname(os.getcwd())
-os.chdir(path_parent)
+#path_parent = os.path.dirname(os.getcwd())
+#os.chdir(path_parent)
 basepath = os.path.abspath('')
 sys.path.append(f"{basepath}")
 sys.path.append(f"{basepath}/NN")
 model_paths = f"{basepath}/Trained_models"
 from keras import models
 import matplotlib.pyplot as plt
-
+from scipy import stats
 # In[Load data]
 
-Data_obj = np.load("Data_tf_ready_QT.npy", allow_pickle=True)
-Data_dict = Data_obj[()]
+Data_dict = np.load("Data_tf_ready_QT.npy", allow_pickle=True)[()]
+Data_dict_uns = np.load("Test_data_unscaled.npy", allow_pickle=True)[()]
 
 X_train = Data_dict['X_train'].astype('float32')
 Y_train = Data_dict['Y_train'].astype('float32')
 X_val = Data_dict['X_val'].astype('float32')
 Y_val = Data_dict['Y_val'].astype('float32')
-#Y_train = np.expand_dims(Y_train, axis = 1)
-#Y_val = np.expand_dims(Y_val, axis = 1)
+
+X_test = Data_dict_uns['X_test'].astype('float32')
+Y_test = Data_dict_uns['Y_test'].astype('float32')
+X_test_sc = Data_dict['X_test'].astype('float32')
 
 # In[Function for predictions]
 def predict_prob(model, x, batch_size=2048):
