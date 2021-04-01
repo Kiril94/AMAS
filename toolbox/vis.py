@@ -124,7 +124,7 @@ def nice_histogram(
     hist_linewidth = 2, plot_style = 'ggplot'):
 
     """Produce a nice histogram.
-    Returns: x, y, sy, binwidth, fig, ax."""
+    Returns: dictionary with x, y, sy, binwidth, fig, ax."""
     if not(x_range==None):
         mask_x = (x_all>x_range[0]) & (x_all<x_range[1])
         x_all = x_all[mask_x]
@@ -181,11 +181,11 @@ def nice_histogram(
         plt.show(fig)
     else:
         plt.close(fig)
-        
+    Figure = {"x":x, "y":y, "binwidth":binwidth, "fig":fig, "ax":ax}
     if poisson_error:
-        return x, y, sy, binwidth, fig, ax
-    else:
-        return x, y, binwidth, fig, ax
+        Figure["sy"] =sy
+    
+    return Figure
 
 #############################
 def nice_contour(
