@@ -24,7 +24,7 @@ import sympy as sp
 from scipy import special
 import itertools
 from decimal import Decimal
-
+       
 # In[Basic]
 def load_url_data(url): 
     """Load text data under url into numpy array. 
