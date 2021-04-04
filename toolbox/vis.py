@@ -27,7 +27,7 @@ def nice_plot(
     plot_style = 'ggplot', linestyle = 'solid', ecolor = 'deepskyblue', 
     capsize = 3, capthick = 0.3, err_markersize = 6,  elinewidth = .9, 
     alpha = 1, scr_markersize = 30, scr_markerstyle = 'o', linewidth = 3, fill_under_curve = False, 
-    fill_color = 'skyblue', color_scheme = None):
+    fill_color = 'skyblue'):
     r"""
     Simple x-y plot. 
     
@@ -49,14 +49,16 @@ def nice_plot(
         fig = figure
     else:
         fig, ax = plt.subplots(figsize=figsize)
-    if not(color_scheme==None):
-        if not(type(color_scheme)==tuple):
-            print('color_scheme is not a tuple!')
-        else:
-            line_color = Color_palette(color_scheme[0])[color_scheme[1]]
+        
+    if type(color)==tuple:
+        line_color = Color_palette(color[0])[color[1]]
     else:
         line_color = color
-
+    if type(ecolor)==tuple:
+        ecolor = Color_palette(ecolor[0])[ecolor[1]]
+    if type(fill_color)==tuple:
+        fill_color = Color_palette(fill_color[0])[fill_color[1]]
+        
     plt.style.use(plot_style)
     const_err = (type(SY)==float)
     if const_err:

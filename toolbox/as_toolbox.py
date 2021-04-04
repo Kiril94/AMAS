@@ -279,38 +279,6 @@ def calc_separation(x, y):
     
     return d, std_to_prob(d)
 
-def compute_FPR_TPR(X, y, c, var, larger =True ):
-    """Compute FPR and TPR.
-    Parameters:
-        X: array_like,
-            input data, NxM with N samples M variables, 
-            assuming that positive has an entr
-        y: array_like,
-            1 if positive 0 else
-        c: float,
-            separation threshold
-        var: integer, 0,..,M-1
-            select column
-        larger: bool,
-            if True, positive/H0 reject for var>c
-    Returns:
-        FPR, TPR
-        """
-    X_pos = X[y == 1]
-    X_neg = X[y == 0]
-    if larger:
-        mask_pos = X_pos[:,var]>c
-        mask_pos = X_neg[:,var]>c
-    else:
-        mask_pos = X_pos[:,var]<c
-        mask_pos = X_neg[:,var]<c
-    X_tp = X_pos[mask_pos]
-    X_fp = X_neg[mask_pos]
-    TPR = len(X_tp)/len(X_pos)
-    FPR = len(X_fp)/len(X_neg)
-    return FPR, TPR
-
-
 def runsTest(arr):
     """Runs test for randomness. 
     Parameters: arr array of digits
@@ -452,3 +420,42 @@ class UNLLH_scan:
         llh = -np.sum(logf, axis = len(index))#sum over the axis that represents the data points(last axis)
         
         return Par_grid, llh
+    
+    
+def False_Negative_Rate(y_pred, y_true):
+    """Compute the number of false positives. 
+    Where positive is 1."""
+    mask_pred = y_pred==0
+    mask_true = y_true==1
+    mask_FN = mask_pred&mask_true
+    FN =  np.count_nonzero(mask_FN)
+    P = np.count_nonzero(y_true==1)
+    return FN/P
+
+def False_Positive_Rate(y_pred, y_true):
+    """Compute the number of false positives. 
+    Where positive is 1."""
+    mask_pred = y_pred==1
+    mask_true = y_true==0
+    mask_FP = mask_pred&mask_true
+    FP = np.count_nonzero(mask_FP)
+    N = np.count_nonzero(y_true==0)
+    return FP/N
+
+def True_Negative_Rate(y_pred, y_true):
+    return 1 - False_Positive_Rate(y_pred, y_true)
+
+def True_Positive_Rate(y_pred, y_true):
+    return 1 - False_Negative_Rate(y_pred, y_true)
+
+def Precision(y_pred, y_true):
+    TPR = True_Positive_Rate(y_pred, y_true)
+    FPR = False_Positive_Rate(y_pred, y_true)
+    P = np.count_nonzero(y_true==1)
+    N = np.count_nonzero(y_true==0)
+    TP = TPR*P
+    FP = FPR*N
+    return TP/(TP+FP)
+
+def False_Discovery_Rate(y_pred,y_true):
+    return 1-Precision(y_pred, y_true)
