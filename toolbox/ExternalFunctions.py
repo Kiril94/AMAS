@@ -150,7 +150,7 @@ def integrate1d(f, bound, nint, *arg):
 
 
 
-class UnbinnedLH:  # override the class with a better one
+class NLLH:  # override the class with a better one
     """Works not as expected when passed to the  minimizer!!! Look at the minimizer in as_toolbox which is incomplete, but
     works for the simplest case."""
     def __init__(self, f, data, weights=None, bound=None, badvalue=-100000, extended=False, extended_bound=None, extended_nint=100):

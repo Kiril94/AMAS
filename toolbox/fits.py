@@ -4,7 +4,7 @@ Created on Sat Jan 16 15:18:15 2021
 
 @author: klein
 """
-from toolbox.ExternalFunctions import UnbinnedLH, BinnedLH, Chi2Regression
+from toolbox.ExternalFunctions import NLLH, BinnedLH, Chi2Regression
 from iminuit import Minuit
 import numpy as np
 import matplotlib.pyplot as plt
@@ -89,7 +89,7 @@ def produce_hist_values(x_all, N_bins, x_range = None, poisson_error = False,
         return x, y, binwidth
     
 
-def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
+def hist_fit(fit_func, x_all, p0, N_bins = None, x_range = None, fit_type = 'ullh',
              observed = True, print_level = 1): 
     r"""
     Perform fit on histogram data.
@@ -135,26 +135,37 @@ def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
     sy: array_like
         Error on counts assuming Poisson distributed bin counts
     """
-    
+    return_dict = {}
     if x_range == None:
         x_range = (x_all.min(), x_all.max())
-    x, y, sy, binwidth = produce_hist_values(x_all, N_bins,x_range = x_range, poisson_error = True)
     
     if fit_type == 'chi2':
+        if not(hasattr(N_bins, "__len__")):
+            if N_bins==None:
+                raise ValueError("You have to provide N_bins.")
+        x, y, sy, binwidth = produce_hist_values(x_all, N_bins,x_range = x_range,
+                             poisson_error = True)
+        return_dict['x'] = x
+        return_dict['y'] = y
+        return_dict['sy'] = sy
+        return_dict['binwidth'] = binwidth
         if observed:
             fit_object = Chi2Regression(fit_func, x[y>0], y[y>0], sy[y>0])
         else:
             fit_object = Chi2Regression(fit_func, x, y, sy, observed = False)
     
     elif fit_type == 'bllh':
+        if not(hasattr(N_bins, "__len__")):
+            if N_bins==None:
+                raise ValueError("You have to provide N_bins.")
         fit_object = BinnedLH(fit_func, x_all, bins=N_bins, 
                               bound=x_range, extended=True)
     
     elif fit_type == 'ullh':
-        fit_object = UnbinnedLH(fit_func, x_all, extended=True)
+        fit_object = NLLH(fit_func, x_all, extended=True)
     
     else:
-        raise Invalid_Argument
+        raise Invalid_Argument('For fit type choose: ullh, chi2 or bllh ')
     #get names of the func arguments which are passed to Minuit
     p0_names, p0_values =[],[] 
     for i in range(len(p0)):
@@ -168,7 +179,8 @@ def hist_fit(fit_func, x_all, p0, N_bins, x_range = None, fit_type = 'chi2',
     minuit_obj = Minuit(fit_object, **kwdarg, pedantic=False, 
                         print_level=print_level )
     minuit_obj.migrad()
-    return minuit_obj, x, y, sy
+    return_dict['minuit_obj'] = minuit_obj
+    return return_dict
     
 
 def chi2_fit_func(
