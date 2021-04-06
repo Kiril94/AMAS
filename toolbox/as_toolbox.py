@@ -6,7 +6,7 @@ Created on Fri Jan 15 14:23:38 2021
 
 Basic functions for statistics.
 """
-
+# In[]
 import numpy as np
 from scipy import stats
 import urllib
@@ -25,7 +25,7 @@ from scipy import special
 import itertools
 from decimal import Decimal
        
-# In[Basic]
+# In[]
 def load_url_data(url): 
     """Load text data under url into numpy array. 
     Lines of text separate different data sets."""
@@ -223,7 +223,7 @@ def round_result(mean, err):
     return print("{} ± {} (×10^{})".format(*round_to_uncertainty(mean, err)))
 
 
-# In[Draw rand numbers]
+# In[]
 def accept_reject(func, N, xmin, xmax, ymax, initial_factor = 2, random_state = 1):
     r"""Produce N random numbers distributed according to the function
         func using accept/reject method."""
@@ -257,7 +257,7 @@ def transform_method(inv_func,xmin, xmax, N, initial_factor = 2):
             inv_func,xmin, xmax, N, initial_factor = initial_factor*2 )
     return x
 
-# In[Tests]
+# In[]
 
 def two_sample_test(mu1, mu2, sig_mu1, sig_mu2):
     """Compute p-value for mean values of two samples agreeing with each other.
@@ -369,8 +369,9 @@ def seq_freq_test(
     return chi2_prob, fig,ax
 
 
-class UNLLH: 
-    """Class for computing the unbinned negative log likelihood. The instance can be passed to a minimizer."""
+class NLLH: 
+    """Class for computing the negative log likelihood. 
+    The instance can be passed to a minimizer."""
     def __init__(self, f, data):
     
         self.f = f  # model predicts PDF for given x
@@ -383,11 +384,11 @@ class UNLLH:
         f = compute_f(self.f, self.data, *par)
         # compute the sum of the log values: the LLH
         logf = np.log(f)
-        llh = -np.sum(logf)
+        nllh = -np.sum(logf)
         
-        return llh
+        return nllh
     
-class UNLLH_scan: 
+class NLLH_scan: 
     """Class for scanning the 1d/2d landscape of the NLLH."""
     def __init__(self, f, data):
     
@@ -459,3 +460,22 @@ def Precision(y_pred, y_true):
 
 def False_Discovery_Rate(y_pred,y_true):
     return 1-Precision(y_pred, y_true)
+
+def MCMH(post, prop, Theta0, num_iter = 1000, nwalkers = 10, burn_in = 500):
+    """Performs the Monte_Carlo Metropolis Hasting algorithm for a 1d function.
+        prop: proposal function, should take only size as argument
+        Theta0: initial guess float or array"""
+    if num_iter<burn_in:
+        raise ValueError('num_iter should be larger than burn_in')
+    if type(Theta0==float) or type(Theta0==int):
+        Theta0 = Theta0*np.ones(nwalkers)
+    Theta_arr = np.empty((num_iter,nwalkers))
+    for i in range(num_iter):
+        Theta_prop = Theta0+prop(size = nwalkers)
+        rand = np.random.uniform(size = nwalkers)
+        accept_mask = post(Theta_prop)/post(Theta0)>rand
+        Theta0[accept_mask] = Theta_prop[accept_mask]
+        Theta_arr[i, accept_mask] = Theta0[accept_mask]
+        Theta_arr[i, ~accept_mask] = Theta0[~accept_mask]
+    Theta_arr = Theta_arr[burn_in:,:].reshape(-1)
+    return Theta_arr

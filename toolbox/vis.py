@@ -130,7 +130,7 @@ def nice_histogram(
     if not(x_range==None):
         mask_x = (x_all>x_range[0]) & (x_all<x_range[1])
         x_all = x_all[mask_x]
-      
+
     if poisson_error:
         x,y,sy, binwidth = fits.produce_hist_values(
             x_all,N_bins, x_range = x_range,
@@ -140,7 +140,11 @@ def nice_histogram(
             x_all,N_bins, x_range = x_range,
             log = xlog_scale, poisson_error = poisson_error)
 
-        
+    if type(color_hist)==tuple:
+        color_hist = Color_palette(color_hist[0])[color_hist[1]] 
+    if type(ecolor)==tuple:
+        ecolor = Color_palette(ecolor[0])[ecolor[1]]    
+
     if not(axis==None):
         ax = axis
         fig = figure
