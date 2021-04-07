@@ -189,10 +189,12 @@ def chi2_fit_func(
     """Fit a single function to data, calls chi2_fit_mult_func"""
     if Range==None:
         Range = [(x.min(), x.max())]
-    ax, fig, Popt, Pcov = chi2_fit_mult_func(
+    ax, fig, Fit_dict = chi2_fit_mult_func(
         x, y, sy, [func], [p0], Ranges = Range, 
         Fit_label = [fit_label], Text_pos = [Text_pos], **kwargs)
-    return ax, fig, Popt[0], Pcov[0]
+    Chi2, Pval, Popt, Pcov = Fit_dict['Chi2'], Fit_dict['Pval'], Fit_dict['Popt'], Fit_dict['Pcov']
+    fit_dict = {'chi2':Chi2[0], 'pval':Pval[0], 'popt':Popt[0], 'pcov':Pcov[0]}
+    return fig, ax, fit_dict
 
 
 def chi2_fit_mult_func(
@@ -267,7 +269,7 @@ def chi2_fit_mult_func(
                 label =data_label)#plot data
     Popt, Pcov = [], []#lists to store fitted params
     x_res, y_res, sy_res = [],[],[]
-    
+    Pval, Chi2 = [], []
     color_scheme = vis.Color_palette(color_scheme)
     plt.style.use(style)
     if not(Colors == None):
@@ -282,17 +284,19 @@ def chi2_fit_mult_func(
         fit_label = Fit_label[i]
         x, y, sy = X[mask], Y[mask], SY[mask]
         p0 = P0[i]
-        popt, pcov = curve_fit(func, x,y, p0 = p0, 
+        popt, pcov = curve_fit(func, x, y, p0 = p0, 
                                sigma = sy, absolute_sigma=True)
-        Popt.append(popt)
-        Pcov.append(pcov)
+       
         sigma_popt = np.sqrt(np.diag(pcov))
         Ndof = len(x) - len(p0)
         chi2_val = as_toolbox.chi_sq(func(x, *popt), y, sy)
         Prob = stats.chi2.sf(chi2_val, Ndof)#p value
         xaxis = np.linspace(xmin, xmax, 1000)
         yaxis = func(xaxis, *popt)
-        
+        Popt.append(popt)
+        Pcov.append(pcov)
+        Chi2.append(chi2_val)
+        Pval.append(Prob)
         if show_CI:
             sigma_ab = np.sqrt(np.diagonal(pcov))
             best_fit_ab = popt
@@ -327,6 +331,7 @@ def chi2_fit_mult_func(
             ax.text(text_pos[0], text_pos[1], text, fontsize=text_fs,  family='monospace', 
                     transform=ax.transAxes, color=color, verticalalignment='top', horizontalalignment ='left');
         ax.plot(xaxis, yaxis,color = color, label= fit_label);
+    Fit_dict = {'Chi2':Chi2, 'Pval':Pval, 'Popt':Popt, 'Pcov':Pcov}
     
     x_res = np.ndarray.flatten(np.array(x_res))
     y_res = np.ndarray.flatten(np.array(y_res))
@@ -405,6 +410,6 @@ def chi2_fit_mult_func(
     else:
         plt.close(fig)
         
-    return ax, fig, Popt, Pcov
+    return fig, ax, Fit_dict
         
         
