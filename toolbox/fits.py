@@ -201,7 +201,7 @@ def chi2_fit_mult_func(
     X,Y,SY,functions, P0, Ranges,absolute_sigma = True,
     plot_res = False, plot_res_distr = False, show_plot = True, 
     save_plot=False, figname = None, xlabel = 'x',ylabel='', 
-    data_label='Data, with Poisson errors',Fit_label = ['','',''], 
+    data_label='Data',Fit_label = ['','',''], 
     Text_pos = [(0.01,.99), (.3,.99),(.4,.99)], figsize = (10,5), 
     y_range= None, legend_loc = 0, legend_fs =20, label_fs = 25,
     ticksize = 20, res_legend_fs =18, res_label = 'res. with error', 
