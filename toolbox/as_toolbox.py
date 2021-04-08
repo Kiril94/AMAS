@@ -479,3 +479,28 @@ def MCMH(post, prop, Theta0, num_iter = 1000, nwalkers = 10, burn_in = 500):
         Theta_arr[i, ~accept_mask] = Theta0[~accept_mask]
     Theta_arr = Theta_arr[burn_in:,:].reshape(-1)
     return Theta_arr
+
+def Create_uniform_angles(Npoints):
+    """Given number of points, create angles corresponding to isotropic points on a unit sphere"""
+    Phi = np.pi*2*np.random.uniform(size = Npoints)-np.pi
+    Theta = np.arccos(2*np.random.uniform(size = Npoints)-1)-np.pi/2
+    return Phi, Theta
+def cumulative_autocorrelation(X, phi):
+    """Compute cum. autocorrelation given X where rows of X are xi, yi, zi, 
+    i.e. every column is a 3d vector."""
+    Ntot = X.shape[1]
+    C = []
+    for i in range(0,Ntot):
+        for j in range(0,i):
+            cosphitemp = np.dot(X[:,i], X[:,j])-np.cos(phi)
+            C.append(np.heaviside(cosphitemp,0))
+    C = np.sum(np.array(C), axis = 0)*2/(Ntot* (Ntot-1))
+    return C
+
+def create_points3d(phi, theta, r = 1):
+    """Create a point in spherical coordinates given phi and theta"""
+    X = np.empty(( 3,len(phi)))
+    X[0,:] = r*np.cos(phi)*np.sin(theta)
+    X[1,:] = r*np.sin(phi)*np.sin(theta)
+    X[2,:] = r*np.cos(theta)
+    return X

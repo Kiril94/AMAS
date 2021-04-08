@@ -27,7 +27,7 @@ def nice_plot(
     plot_style = 'ggplot', linestyle = 'solid', ecolor = 'deepskyblue', 
     capsize = 3, capthick = 0.3, err_markersize = 6,  elinewidth = .9, 
     alpha = 1, scr_markersize = 30, scr_markerstyle = 'o', linewidth = 3, fill_under_curve = False, 
-    fill_color = 'skyblue'):
+    fill_color = 'skyblue', drawstyle = 'default'):
     r"""
     Simple x-y plot. 
     
@@ -74,7 +74,7 @@ def nice_plot(
             linestyle = linestyle, s = scr_markersize,
             alpha = alpha, marker = scr_markerstyle)
     else:
-        ax.plot(X,Y, color = line_color,  label =data_label, 
+        ax.plot(X,Y, color = line_color,  label =data_label, drawstyle = drawstyle, 
                 linestyle = linestyle, alpha = alpha, linewidth = linewidth)
     
     if fill_under_curve:
