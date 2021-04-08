@@ -507,7 +507,8 @@ def create_points3d(phi, theta, r = 1):
     X[1,:] = r*np.sin(phi)*np.sin(theta)
     X[2,:] = r*np.cos(theta)
     return X
-@jit()
+
+#@jit()
 def sample_spherical_uniform(npoints, ndim=3):
     "Sample points uniformly on a sphere in ndim."
     vec = np.random.randn(ndim, npoints)
