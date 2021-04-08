@@ -383,8 +383,12 @@ class NLLH:
         # compute the function value
         f = compute_f(self.f, self.data, *par)
         # compute the sum of the log values: the LLH
-        logf = np.log(f)
-        nllh = -np.sum(logf)
+        pos_mask = f>0
+        llh = np.zeros_like(f)
+        llh[pos_mask] = np.log(f[pos_mask])
+        llh[~pos_mask] = -np.inf
+        
+        nllh = -np.sum(llh)
         
         return nllh
     
@@ -416,10 +420,11 @@ class NLLH_scan:
         #now function can be called
         f = compute_f(self.f, self.data, *par)
         # compute the sum of the log values: the LLH
-        
+        pos_mask = f>0
         logf = np.log(f)
+        logf[~pos_mask] = -np.inf
         llh = -np.sum(logf, axis = len(index))#sum over the axis that represents the data points(last axis)
-        
+        llh[~pos_mask] = -np.inf
         return Par_grid, llh
     
     
