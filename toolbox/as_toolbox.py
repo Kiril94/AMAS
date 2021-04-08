@@ -486,7 +486,7 @@ def Create_uniform_angles(Npoints):
     Phi = np.pi*2*np.random.uniform(size = Npoints)
     Theta = np.arccos(2*np.random.uniform(size = Npoints)-1)
     return Phi, Theta
-@jit()
+
 def cumulative_autocorrelation(X, phi):
     """Compute cum. autocorrelation given X where rows of X are xi, yi, zi, 
     i.e. every column is a 3d vector."""
@@ -508,7 +508,6 @@ def create_points3d(phi, theta, r = 1):
     X[2,:] = r*np.cos(theta)
     return X
 
-#@jit()
 def sample_spherical_uniform(npoints, ndim=3):
     "Sample points uniformly on a sphere in ndim."
     vec = np.random.randn(ndim, npoints)
