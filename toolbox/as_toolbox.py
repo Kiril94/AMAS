@@ -24,7 +24,7 @@ import sympy as sp
 from scipy import special
 import itertools
 from decimal import Decimal
-       
+
 # In[]
 def load_url_data(url): 
     """Load text data under url into numpy array. 
@@ -479,22 +479,25 @@ def MCMH(post, prop, Theta0, num_iter = 1000, nwalkers = 10, burn_in = 500):
         Theta_arr[i, ~accept_mask] = Theta0[~accept_mask]
     Theta_arr = Theta_arr[burn_in:,:].reshape(-1)
     return Theta_arr
-
 def Create_uniform_angles(Npoints):
-    """Given number of points, create angles corresponding to isotropic points on a unit sphere"""
-    Phi = np.pi*2*np.random.uniform(size = Npoints)-np.pi
-    Theta = np.arccos(2*np.random.uniform(size = Npoints)-1)-np.pi/2
+    """Given number of points, 
+    create angles corresponding to isotropic points on a unit sphere.
+    Phi [0, 2pi], Theta [0,pi]"""
+    Phi = np.pi*2*np.random.uniform(size = Npoints)
+    Theta = np.arccos(2*np.random.uniform(size = Npoints)-1)
     return Phi, Theta
+@jit()
 def cumulative_autocorrelation(X, phi):
     """Compute cum. autocorrelation given X where rows of X are xi, yi, zi, 
     i.e. every column is a 3d vector."""
     Ntot = X.shape[1]
-    C = []
+    C_temp = np.zeros(len(phi))
     for i in range(0,Ntot):
         for j in range(0,i):
             cosphitemp = np.dot(X[:,i], X[:,j])-np.cos(phi)
-            C.append(np.heaviside(cosphitemp,0))
-    C = np.sum(np.array(C), axis = 0)*2/(Ntot* (Ntot-1))
+            mask = cosphitemp>=0
+            C_temp[mask] += 1
+    C = C_temp*2/(Ntot* (Ntot-1))
     return C
 
 def create_points3d(phi, theta, r = 1):
@@ -504,3 +507,14 @@ def create_points3d(phi, theta, r = 1):
     X[1,:] = r*np.sin(phi)*np.sin(theta)
     X[2,:] = r*np.cos(theta)
     return X
+@jit()
+def sample_spherical_uniform(npoints, ndim=3):
+    "Sample points uniformly on a sphere in ndim."
+    vec = np.random.randn(ndim, npoints)
+    vec /= np.linalg.norm(vec, axis=0)
+    return vec
+
+
+def f_isotropic(phi):
+    """Cumulative Autocorrelation corr. to an isotropic distribution on a sphre."""
+    return 1/2*(1-np.cos(phi))
