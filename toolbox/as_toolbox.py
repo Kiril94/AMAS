@@ -525,3 +525,12 @@ def sample_spherical_uniform(npoints, ndim=3):
 def f_isotropic(phi):
     """Cumulative Autocorrelation corr. to an isotropic distribution on a sphre."""
     return 1/2*(1-np.cos(phi))
+
+def polar_to_cart(r, phi):
+    x = np.cos(phi)*r
+    y = np.sin(phi)*r
+    return x, y
+def cart_to_polar(x,y):
+    phi = np.sign(y)*(np.arctan(y/x)+np.pi/2)
+    r = x**2 + y**2
+    return r, phi
