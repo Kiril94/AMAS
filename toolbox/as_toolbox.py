@@ -517,6 +517,8 @@ def sample_spherical_uniform(npoints, ndim=3):
     "Sample points uniformly on a sphere in ndim."
     vec = np.random.randn(ndim, npoints)
     vec /= np.linalg.norm(vec, axis=0)
+    if npoints == 1:
+        vec = vec.flatten()
     return vec
 
 
